@@ -1,0 +1,446 @@
+# -*- coding: utf-8 -*-
+import win32com.client
+from vertical import *
+from horizontal import *
+from crosswidth import *
+from crossslope import *
+from constructions import *
+def u(s):
+    if isinstance(s, unicode):
+        return s
+    else:
+        return s.decode('utf-8')
+class incadproject():
+    def __init__(self):
+        self.project=win32com.client.Dispatch("incadopera.incadproject")
+    def _checkproject(self):
+        if not self.opened():
+            print "错误，项目没有打开任何一个数据库"
+            return False
+        return True
+    def closeproject(self):
+        self.project.CloseProject()
+    def openproject(self, name):
+        ret=self.project.OpenProject(name)
+        if ret  == 1 :
+            return True
+        else:
+            return False
+    def newproject(self, name):
+        ret=self.project.NewProject(name)
+        if ret  == 1 :
+            return True
+        else:
+            return False
+    def projectpath(self):
+        if not self._checkproject():
+            return
+        return self.project.ProjectPath
+    def comment(self):
+        if not self._checkproject():
+            return
+        return self.project.comment
+    def modifycomment(self, comment):
+        if not self._checkproject():
+            return
+        self.project.ModifyComment(u(comment))
+    def opened(self):
+        if self.project.Opened == 0:
+            return False
+        return True
+    def getramplist(self):
+        if not self._checkproject():
+            return
+        pa=self.project.GetRampList()
+        coun=pa[0]
+        li=pa[1]
+        if coun == 0:
+            return []
+        b=[]
+        for i in range(0, len(li), 3):
+            b.append(li[i:i+3])
+        return b
+    def nametoid(self, namestr):
+        #如果返回0，则为不存在该匝道
+        if not self._checkproject():
+            return
+        id=self.project.NameToID(namestr)
+        return id
+    def getgroundlist(self, rampid):
+        if not self._checkproject():
+            return
+        pa=self.project.GetGroundList(rampid)
+        coun=pa[0]
+        li=pa[1]
+        if coun == 0:
+            return []
+        b=[]
+        for i in range(0, len(li), 2):
+            b.append(li[i:i+3])
+        return b
+    def getverticallist(self, rampid):
+        if not self._checkproject():
+            return
+        pa=self.project.GetVerticalList(rampid)
+        coun=pa[0]
+        li=pa[1]
+        if coun == 0:
+            return []
+        b=[]
+        for i in range(0, len(li), 2):
+            b.append(li[i:i+3])
+        return b
+    def getwidthlist(self, rampid):
+        if not self._checkproject():
+            return
+        pa=self.project.GetWidthList(rampid)
+        coun=pa[0]
+        li=pa[1]
+        if coun == 0:
+            return []
+        b=[]
+        for i in range(0, len(li), 2):
+            b.append(li[i:i+2])
+        return b
+    def getcrossslopelist(self, rampid):
+        if not self._checkproject():
+            return
+        pa=self.project.GetSuperElevationList(rampid)
+        coun=pa[0]
+        li=pa[1]
+        if coun == 0:
+            return []
+        b=[]
+        for i in range(0, len(li), 2):
+            b.append(li[i:i+2])
+        return b
+    def horizontalcontrolpoints(self):
+        if not self._checkproject():
+            return
+        pass
+    def horizontal(self, rampid):
+        if not self._checkproject():
+            return
+        obj=horizontal(False,self)
+        obj.object=self.project.Horizontal(rampid)
+        return obj
+    def crosswidth(self, rampid, crossid):
+        if not self._checkproject():
+            return
+        if self.havewidth(rampid, crossid):
+            obj=crosswidth(False, self)
+            obj.object=self.project.CrossWidth(rampid, crossid)
+            return obj
+        return None
+    def ground(self, rampid, id):
+        if not self._checkproject():
+            return
+        if self.haveground(rampid, id):
+            obj=ground(False, self)
+            obj.object=self.project.ground(rampid, id)
+            return obj
+        return None
+    def vertical(self, rampid, id):
+        if not self._checkproject():
+            return
+        if self.havevertical(rampid, id):
+            ver=vertical(False, self)
+            ver.object=self.project.Vertical(rampid, id)
+            return ver
+        return None
+    def crossslope(self, rampid, id):
+        if not self._checkproject():
+            return
+        if self.havecrossslope(rampid,id):
+            slp=crossslope(False,self)
+            slp.object=self.project.SuperElevation(rampid,id)
+            return slp
+    def crossset(self, rampid):
+        if not self._checkproject():
+            return
+        pass
+    def constructions(self, rampid):
+        if not self._checkproject():
+            return
+        con=constructions(False,self)
+        con.object=self.project.Constructions(rampid)
+        return con
+    def verticalcontrolpoints(self, rampid):
+        if not self._checkproject():
+            return
+        con=verticalcontrolpoints(False,self)
+        con.object=self.project.VerticalControlPoints(rampid)
+        return con
+    def haveramp(self, rampid):
+        if not self._checkproject():
+            return
+        r=self.project.HaveRamp(rampid)
+        if r == 1 :
+            return True
+        return False
+    def deleteramp(self, rampid):
+        if not self._checkproject():
+            return
+        self.project.DeleteRamp(rampid)
+    def newramp(self, name, comment=""):
+        #新建匝道，返回建立的匝道ID
+        if not self._checkproject():
+            return
+        return self.project.NewRamp(u(name), u(comment))
+    def newramp1(self,rampid, name="", comment=""):
+        #新建匝道，返回建立的匝道ID
+        if not self._checkproject():
+            return
+        return self.project.NewRamp1(rampid,u(name), u(comment))
+    def getramp(self,id):
+        if not self._checkproject():
+            return
+        return self.project.GetRamp(id)
+    def modifyramp(self, id, name='', comment=''):
+        if not self._checkproject():
+            return
+        n=self.getramp(id)
+        if name == '':
+            name=n[0]
+        if comment == '':
+            comment=n[1]
+        self.project.ModifyRamp(id, u(name), u(comment))
+    def newground(self, rampid, id, comment):
+        if not self._checkproject():
+            return
+        return self.project.NewGround(int(rampid), int(id), u(comment))
+    def delground(self, rampid,id):
+        if not self._checkproject():
+            return
+        self.project.DelGround(rampid, id)
+    def haveground(self, rampid, id):
+        if not self._checkproject():
+            return
+        sta=self.project.HaveGround(rampid, id)
+        if sta == 0:
+            return False
+        return True
+    def getgroundcomment(self,rampid,id):
+        if not self._checkproject():
+            return
+        objli=self.getgroundlist(rampid)
+        if len(objli) == 0:
+            return ""
+        for i in range(len(objli)):
+            if objli[i][0] == id:
+                return objli[i][1]
+    def modifygroundcomment(self,rampid,id,comment):
+        if not self._checkproject():
+            return
+        self.project.Database.ModifyGround(rampid,id,id,comment)
+    def newvertical(self, rampid, id, comment):
+        if not self._checkproject():
+            return
+        self.project.NewVertical(int(rampid),int( id), u(comment))
+    def delvertical(self, rampid, id):
+        if not self._checkproject():
+            return
+        self.project.DelVertical(rampid, id)
+    def havevertical(self, rampid, id):
+        if not self._checkproject():
+            return
+        sta=self.project.HaveVertical(rampid, id)
+        if (sta == 1) :
+            return True
+        return False
+    def getverticalcomment(self,rampid,id):
+        if not self._checkproject():
+            return
+        objli=self.getverticallist(rampid)
+        if len(objli) == 0:
+            return ""
+        for i in range(len(objli)):
+            if objli[i][0] == id:
+                return objli[i][1]
+    def modifyverticalcomment(self,rampid,id,comment):
+        if not self._checkproject():
+            return
+        self.project.Database.ModifyVertical(rampid,id,id,comment)
+    def newwidth(self, rampid, id, comment):
+        if not self._checkproject():
+            return
+        self.project.NewWidth(rampid,id,comment)
+    def delwidth(self, rampid, id):
+        if not self._checkproject():
+            return
+        self.project.DelWidth(rampid,id)
+    def havewidth(self, rampid, id):
+        if not self._checkproject():
+            return
+        sta=self.project.HaveWidth(rampid, id)
+        if sta == 0:
+            return False
+        return True
+    def getwidthcomment(self,rampid,id):
+        if not self._checkproject():
+            return
+        objli=self.getwidthlist(rampid)
+        if len(objli) == 0:
+            return ""
+        for i in range(len(objli)):
+            if objli[i][0] == id:
+                return objli[i][1]
+    def modifywidthcomment(self,rampid,id,comment):
+        if not self._checkproject():
+            return
+        self.project.Database.ModifyWidth(rampid,id,id,comment)
+    def newcrossslope(self, rampid,id, comment):
+        if not self._checkproject():
+            return
+        self.project.NewSuperElevation(rampid,id,comment)
+    def delcrossslope(self, rampid, id):
+        if not self._checkproject():
+            return
+        self.project.DelSuperElevation(rampid,id)
+    def havecrossslope(self, rampid, id):
+        if not self._checkproject():
+            return
+        sta=self.project.HaveSuperElevation(rampid,id)
+        if (sta == 1) :
+            return True
+        return False
+    def modifycrossslopecomment(self,rampid,id,comment):
+        if not self._checkproject():
+            return
+        self.project.Database.ModifySuperElevation(rampid,id,id,comment)
+    def getcrossslopecomment(self,rampid,id):
+        if not self._checkproject():
+            return
+        objli=self.getcrossslopelist(rampid)
+        if len(objli) == 0:
+            return ""
+        for i in range(len(objli)):
+            if objli[i][0] == id:
+                return objli[i][1]
+        ##########################################
+    #新增函数
+    def maxrampid(self):
+        #取得最大的匝道ID，如果没有存在匝道，则返回0
+        if not self._checkproject():
+            return
+        rampli=self.getramplist()
+        coun=len(rampli)
+        first=True
+        maxid=0
+        for i in range(coun):
+            id=rampli[i][0]
+            if first:
+                maxid=id
+                first=False
+            else:
+                if id >maxid:
+                    maxid=id
+        return maxid
+    def maxverticalid(self,rampid):
+        #取得最大的纵断面设计线id，如果没有存在，则返回0
+        if not self._checkproject():
+            return
+        objli=self.getverticallist(rampid)
+        coun=len(objli)
+        first=True
+        maxid=0
+        for i in range(coun):
+            id=objli[i][0]
+            if first:
+                maxid=id
+                first=False
+            else:
+                if id >maxid:
+                    maxid=id
+        return maxid
+    def maxgroundid(self,rampid):
+        #取得最大的纵断面设计线id，如果没有存在，则返回0
+        if not self._checkproject():
+            return
+        objli=self.getgroundlist(rampid)
+        coun=len(objli)
+        first=True
+        maxid=0
+        for i in range(coun):
+            id=objli[i][0]
+            if first:
+                maxid=id
+                first=False
+            else:
+                if id >maxid:
+                    maxid=id
+        return maxid
+    def maxcrossslopeid(self,rampid):
+        #取得最大的纵断面设计线id，如果没有存在，则返回0
+        if not self._checkproject():
+            return
+        objli=self.getcrossslopelist(rampid)
+        coun=len(objli)
+        first=True
+        maxid=0
+        for i in range(coun):
+            id=objli[i][0]
+            if first:
+                maxid=id
+                first=False
+            else:
+                if id >maxid:
+                    maxid=id
+        return maxid
+    def maxwidthid(self,rampid):
+        #取得最大的宽度设计线id，如果没有存在，则返回0
+        if not self._checkproject():
+            return
+        objli=self.getwidthlist(rampid)
+        coun=len(objli)
+        first=True
+        maxid=0
+        for i in range(coun):
+            id=objli[i][0]
+            if first:
+                maxid=id
+                first=False
+            else:
+                if id >maxid:
+                    maxid=id
+        return maxid
+    def list_ramp(self):
+        if not self._checkproject():
+            return
+        pa=self.getramplist()
+        print ""
+        if len(pa) == 0:
+            print u"不存在匝道"
+        else:
+            print (u"匝道数=%d"%len(pa))
+            print u"id\t匝道名\t备注"
+            for pp in pa:
+                print "%d\t%s\t%s"%(pp[0], pp[1], pp[2])
+        print "*********"
+    def list_vertical(self, rampid):
+        if not self._checkproject():
+            return
+        pa=self.getverticallist(rampid)
+        print u"*********匝道ID=<%d>的纵断面"%rampid
+        if len(pa) == 0:
+            print u"不存在"
+        else:
+            print (u"纵断面总数=%d"%len(pa))
+            print u"id\t", u"备注"
+            for pp in pa:
+                print pp[0], pp[1]
+        print "*********"
+    def list_ground(self, rampid):
+        #ok
+        if not self._checkproject():
+            return
+        pa=self.getgroundlist(rampid)
+        print u"*********匝道ID=<%d>的纵断面地面线"%rampid
+        if len(pa) == 0:
+            print u"不存在"
+        else:
+            print (u"纵断面地面线总数=%d"%len(pa))
+            print u"id", u"备注"
+            for pp in pa:
+                print pp[0], pp[1]
+        print "*********"
